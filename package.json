@@ -1,0 +1,19 @@
+{
+  "name": "mygo-music-bilibili",
+  "version": "1.1.0",
+  "type": "module",
+  "private": true,
+  "license": "AGPL-3.0",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check index.js && npm test",
+    "test:live": "node scripts/live.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xTreeRoot/mygo-music-bilibili.git"
+  }
+}
