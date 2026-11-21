@@ -1004,6 +1004,15 @@ class BilibiliPlatformStrategy {
     return comment;
   }
 
+  async interactionSummary({ trackId }) {
+    const detail = await this.detail(trackId);
+    const result = {};
+    for (const [key, raw] of [["likes", detail.stat?.like], ["comments", detail.stat?.reply]]) {
+      if (typeof raw === "number" && Number.isSafeInteger(raw) && raw >= 0) result[key] = raw;
+    }
+    return result;
+  }
+
   async isLiked({ ids }) {
     const out = {};
     if (!this.cookie) return out;
@@ -1121,4 +1130,9 @@ export function stream(input) {
 
 export function video(input) {
   return activePlatformStrategy().video(input);
+}
+
+/** 返回视频公开的点赞和评论总数，不需要读取用户账号。 */
+export function interactionSummary(input) {
+  return activePlatformStrategy().interactionSummary(input);
 }

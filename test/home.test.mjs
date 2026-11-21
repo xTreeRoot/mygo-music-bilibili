@@ -127,3 +127,13 @@ test("discovery normalizes HTTP and scheme-relative covers to HTTPS", async () =
     ]);
   });
 });
+
+test("interaction totals use public video statistics and preserve hidden counters", async () => {
+  for (const [stat, expected] of [[{like:120,reply:30},{likes:120,comments:30}], [{like:-1,reply:0},{comments:0}], [{},{ }]]) {
+    await withPlugin(async input => {
+      const url = new URL(input);
+      assert.equal(url.pathname, "/x/web-interface/view");
+      return response({ aid: 1, cid: 2, stat });
+    }, async plugin => assert.deepEqual(await plugin.interactionSummary({trackId:"BV123"}), expected));
+  }
+});
