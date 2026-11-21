@@ -139,7 +139,7 @@ function mapVideo(data) {
     id: bvid,
     video: { width: number(data.dimension?.width), height: number(data.dimension?.height) },
     name: text(data.title) || bvid,
-    artists: authorName ? [{ id: authorId, name: authorName, imageUrl: text(owner.face) }] : [],
+    artists: authorName ? [{ id: authorId, name: authorName, imageUrl: imageURL(owner.face) }] : [],
     album: {
       id: section || "bilibili",
       name: section || host.t("Bilibili videos"),
@@ -153,7 +153,7 @@ function mapVideo(data) {
 /** Normalize the image addresses Bilibili returns, including scheme-relative covers. */
 function imageURL(value) {
   const address = text(value);
-  return address.startsWith("//") ? `https:${address}` : address;
+  return address.startsWith("//") ? `https:${address}` : address.replace(/^http:\/\//i, "https://");
 }
 
 function mapComment(data) {
@@ -301,7 +301,7 @@ class BilibiliPlatformStrategy {
     return {
       id: text(data.mid),
       name: text(data.uname) || text(data.mid),
-      imageUrl: text(data.face),
+      imageUrl: imageURL(data.face),
       page: "personal",
     };
   }
@@ -806,7 +806,7 @@ class BilibiliPlatformStrategy {
     const people = array(data.list).map((person) => ({
       title: text(person.uname) || text(person.mid),
       subtitle: text(person.sign),
-      imageUrl: text(person.face),
+      imageUrl: imageURL(person.face),
       page: `user:${text(person.mid)}`,
     }));
     const more = pageNumber * 20 < number(data.total);
@@ -835,7 +835,7 @@ class BilibiliPlatformStrategy {
     return {
       title: text(profile.name) || mid,
       subtitle: followers,
-      imageUrl: text(profile.face),
+      imageUrl: imageURL(profile.face),
       description: text(profile.sign),
       sections: [{
         title: host.t("Videos"),

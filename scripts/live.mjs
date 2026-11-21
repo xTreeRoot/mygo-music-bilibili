@@ -8,7 +8,12 @@ globalThis.host={platform:'android',t:v=>v,crypto:{md5:v=>createHash('md5').upda
 const plugin=await import('../index.js');
 let failures=0;
 const check=async(name,run)=>{try{await run();console.log('PASS',name);}catch(error){failures++;console.log('FAIL',name,String(error.message).replace(/https?:\/\/\S+/g,'[URL]'));}};
-await check('public home',async()=>assert.ok((await plugin.home()).sections.some(s=>s.tracks?.length)));
+await check('public home and artwork',async()=>{
+ const home=await plugin.home();const track=home.sections.flatMap(section=>section.tracks||[]).find(track=>track.album?.imageUrl);
+ assert.ok(track);assert.ok(track.album.imageUrl.startsWith('https://'));
+ const image=await fetch(track.album.imageUrl,{headers:{Referer:'https://www.bilibili.com/','User-Agent':'Mozilla/5.0'}});
+ assert.ok(image.ok);assert.ok(image.headers.get('content-type')?.startsWith('image/'));assert.ok((await image.arrayBuffer()).byteLength>0);
+});
 let id='BV12BHV6gEdo';
 await check('public search and next page',async()=>{
  const first=await plugin.search({query:'音乐',kind:'tracks',offset:0});assert.ok(first.tracks.length);id=first.tracks[0].id;

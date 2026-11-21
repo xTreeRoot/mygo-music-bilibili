@@ -110,3 +110,20 @@ test("one failed region keeps the other regions available; all failed requests s
     await assert.rejects(plugin.home(), /try again later/);
   });
 });
+
+// 平台部分入口返回明文 HTTP 封面，移动端默认拒绝明文图片连接。
+test("discovery normalizes HTTP and scheme-relative covers to HTTPS", async () => {
+  await withPlugin((input, options) => {
+    const url = new URL(input);
+    if (url.pathname === "/x/web-interface/region/feed/rcmd") return response({ archives: [
+      {...video("http"), pic:"http://i0.hdslb.com/http-cover.jpg"},
+      {...video("relative"), pic:"//i1.hdslb.com/relative-cover.jpg"}
+    ] });
+    return discovery(input, options);
+  }, async plugin => {
+    const page = await plugin.browse({page:"fresh"});
+    assert.deepEqual(page.sections[0].tracks.map(track => track.album.imageUrl), [
+      "https://i0.hdslb.com/http-cover.jpg", "https://i1.hdslb.com/relative-cover.jpg"
+    ]);
+  });
+});
