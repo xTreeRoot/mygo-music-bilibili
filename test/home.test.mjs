@@ -137,3 +137,29 @@ test("interaction totals use public video statistics and preserve hidden counter
     }, async plugin => assert.deepEqual(await plugin.interactionSummary({trackId:"BV123"}), expected));
   }
 });
+
+test('player author entry reuses UP profile and advances works without repeating the first page', async () => {
+  const pages = [];
+  await withPlugin(input => {
+    const url = new URL(input);
+    if (url.pathname === '/x/web-interface/nav') return discovery(input);
+    if (url.pathname === '/x/space/wbi/acc/info') return response({ mid: 7, name: 'Fixture UP', face: '//i.example/avatar.jpg', sign: 'Creator introduction' });
+    if (url.pathname === '/x/relation/stat') return response({ follower: 12 });
+    if (url.pathname === '/x/space/wbi/arc/search') {
+      const page = Number(url.searchParams.get('pn')); pages.push(page);
+      return response({ list: { vlist: Array.from({ length: page === 1 ? 25 : 1 }, (_, i) => video(`page${page}item${i}`)) }, page: { count: 26 } });
+    }
+    throw Error(url.pathname);
+  }, async plugin => {
+    const first = await plugin.artist({ id: '7' });
+    assert.equal(first.artist.name, 'Fixture UP');
+    assert.equal(first.artist.imageUrl, 'https://i.example/avatar.jpg');
+    assert.equal(first.more, true);
+    const next = await plugin.artist({ id: '7', offset: 25 });
+    assert.equal(next.more, false);
+    assert.notEqual(next.tracks[0].id, first.tracks[0].id);
+    assert.deepEqual(pages, [1, 2]);
+    await assert.rejects(plugin.artist({ id: '../x' }), { code: 'unavailable' });
+    await assert.rejects(plugin.artist({ id: '7', offset: -1 }), { code: 'unavailable' });
+  });
+});

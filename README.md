@@ -61,3 +61,7 @@ python3 scripts/test-mobile-runtime.py --mb /path/to/MB
 AGPL-3.0，保留原作者版权。本项目与哔哩哔哩无隶属关系。
 
 播放器可通过 `interactionSummary({trackId})` 读取公开视频详情中的点赞和评论总数；缺失计数保持未知。
+
+## 1.1.4
+
+播放器作者入口复用现有 UP 主主页与作品分页，不再因缺少 artist 导出而报错。

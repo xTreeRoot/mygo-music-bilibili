@@ -1136,3 +1136,16 @@ export function video(input) {
 export function interactionSummary(input) {
   return activePlatformStrategy().interactionSummary(input);
 }
+
+/** 复用已验证的 UP 主主页和作品分页，供通用播放器作者入口使用。 */
+export async function artist({ id, offset = 0 }) {
+  const mid = text(id);
+  if (!/^[1-9]\d{0,19}$/.test(mid) || !Number.isSafeInteger(offset) || offset < 0) throw fail("unavailable", "无效的 UP 主或分页位置");
+  const page = Math.floor(offset / 25) + 1;
+  const profile = await activePlatformStrategy().userPage(mid, page);
+  const section = profile.sections[0];
+  return {
+    artist: { id: mid, name: profile.title, imageUrl: profile.imageUrl, description: profile.description },
+    tracks: section.tracks.slice(offset % 25), more: Boolean(section.morePage),
+  };
+}
