@@ -825,13 +825,16 @@ class BilibiliPlatformStrategy {
     if (!Number.isSafeInteger(page) || page < 1) {
       throw fail("unavailable", "This Bilibili user page is invalid.");
     }
-    const profile = await this.request("/x/space/wbi/acc/info", { mid }, { wbi: true });
+    const profile = await this.request("/x/space/wbi/acc/info", { mid }, { wbi: true, visitor: true });
     let followers = "";
     try {
       const relation = await this.request("/x/relation/stat", { vmid: mid });
       followers = String(number(relation.follower));
     } catch {}
-    const works = await this.userWorks(mid, page);
+    // UP 资料与作品独立可用；平台临时限制作品请求时保留真实资料，并明确显示可刷新状态。
+    let works;
+    try { works = await this.userWorks(mid, page); }
+    catch { works = { tracks: [], more: false, empty: "作品暂时无法加载，请下拉刷新；若仍失败，请在哔哩哔哩官方网页确认访问正常" }; }
     return {
       title: text(profile.name) || mid,
       subtitle: followers,
@@ -840,6 +843,7 @@ class BilibiliPlatformStrategy {
       sections: [{
         title: host.t("Videos"),
         tracks: works.tracks,
+        empty: works.empty,
         ...(works.more ? { morePage: `user:${mid}:${page + 1}` } : {}),
       }],
     };
@@ -862,7 +866,7 @@ class BilibiliPlatformStrategy {
         dm_cover_img_str: "",
         dm_img_inter: "{}",
       },
-      { wbi: true },
+      { wbi: true, visitor: true },
     );
     const list = array(object(data.list).vlist);
     const total = number(object(data.page).count);
@@ -1146,6 +1150,6 @@ export async function artist({ id, offset = 0 }) {
   const section = profile.sections[0];
   return {
     artist: { id: mid, name: profile.title, imageUrl: profile.imageUrl, description: profile.description },
-    tracks: section.tracks.slice(offset % 25), more: Boolean(section.morePage),
+    tracks: section.tracks.slice(offset % 25), more: Boolean(section.morePage), empty: section.empty,
   };
 }

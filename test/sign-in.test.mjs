@@ -379,6 +379,9 @@ test("UP video pagination accepts numeric IDs and requests the selected page", a
           },
         });
       }
+      if (url.pathname === "/x/frontend/finger/spi") {
+        return jsonResponse({ code: 0, data: { b_3: "anonymous-visitor", b_4: "anonymous-four" } });
+      }
       if (url.pathname === "/x/space/wbi/acc/info") {
         assert.equal(url.searchParams.get("mid"), "42");
         return jsonResponse({ code: 0, data: { name: "UP", face: "https://i.example/up", sign: "profile" } });

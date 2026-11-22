@@ -142,7 +142,7 @@ test('player author entry reuses UP profile and advances works without repeating
   const pages = [];
   await withPlugin(input => {
     const url = new URL(input);
-    if (url.pathname === '/x/web-interface/nav') return discovery(input);
+    if (url.pathname === '/x/web-interface/nav' || url.pathname === '/x/frontend/finger/spi') return discovery(input);
     if (url.pathname === '/x/space/wbi/acc/info') return response({ mid: 7, name: 'Fixture UP', face: '//i.example/avatar.jpg', sign: 'Creator introduction' });
     if (url.pathname === '/x/relation/stat') return response({ follower: 12 });
     if (url.pathname === '/x/space/wbi/arc/search') {
@@ -161,5 +161,22 @@ test('player author entry reuses UP profile and advances works without repeating
     assert.deepEqual(pages, [1, 2]);
     await assert.rejects(plugin.artist({ id: '../x' }), { code: 'unavailable' });
     await assert.rejects(plugin.artist({ id: '7', offset: -1 }), { code: 'unavailable' });
+  });
+});
+
+
+test('UP profile stays available with an explicit refresh message when works are temporarily restricted', async () => {
+  await withPlugin(input => {
+    const path = new URL(input).pathname;
+    if (path === '/x/web-interface/nav' || path === '/x/frontend/finger/spi') return discovery(input);
+    if (path === '/x/space/wbi/acc/info') return response({ mid: 7, name: 'Fixture UP', face: '//i.example/avatar.jpg' });
+    if (path === '/x/relation/stat') return response({ follower: 12 });
+    if (path === '/x/space/wbi/arc/search') return { ok: false, status: 412 };
+    throw Error(path);
+  }, async plugin => {
+    const result = await plugin.artist({ id: '7' });
+    assert.equal(result.artist.name, 'Fixture UP');
+    assert.deepEqual(result.tracks, []); assert.equal(result.more, false);
+    assert.match(result.empty, /刷新/);
   });
 });
