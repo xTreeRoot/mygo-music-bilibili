@@ -1,7 +1,7 @@
 {
   "id": "bilibili",
   "name": "Bilibili",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "minAppVersion": "0.1.0",
   "main": "index.js",
   "playback": "stream",
@@ -50,6 +50,43 @@
       "title": "Following",
       "page": "following",
       "icon": "artist"
+    }
+  ],
+  "discovery": [
+    {
+      "id": "recommended",
+      "title": "为你推荐",
+      "page": "recommended"
+    },
+    {
+      "id": "chart",
+      "title": "音乐榜",
+      "page": "chart"
+    },
+    {
+      "id": "rank",
+      "title": "音乐区热门",
+      "page": "rank"
+    },
+    {
+      "id": "fresh",
+      "title": "新鲜投稿",
+      "page": "fresh"
+    },
+    {
+      "id": "favorites",
+      "title": "我的收藏",
+      "page": "favorites"
+    },
+    {
+      "id": "history",
+      "title": "观看历史",
+      "page": "history"
+    },
+    {
+      "id": "following",
+      "title": "我的关注",
+      "page": "following"
     }
   ]
 }

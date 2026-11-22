@@ -7,7 +7,7 @@ runtime_tmp=$(mktemp -d "${TMPDIR:-/tmp}/bilibili-host.XXXXXX")
 trap 'rm -rf "$runtime_tmp"' EXIT HUP INT TERM
 cp "$MOEJS_HOST_DIR/go.mod" "$MOEJS_HOST_DIR/go.sum" "$runtime_tmp/"
 mkdir -p "$runtime_tmp/internal"
-for package in plugin music edge i18n local; do
+for package in plugin music edge i18n local pluginprefs discoveryprefs; do
     cp -R "$MOEJS_HOST_DIR/internal/$package" "$runtime_tmp/internal/$package"
 done
 cp -R "$plugin_root/test/desktop" "$runtime_tmp/validation"
