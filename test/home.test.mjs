@@ -29,6 +29,40 @@ async function withPlugin(fetchMock, run, storage = new Map()) {
 const response = (data) => ({ ok: true, status: 200, json: async () => ({ code: 0, data }) });
 const video = (id) => ({ bvid: `BV${id}`, goto: "av", title: `Video ${id}`, pic: "//i.example/cover.jpg", owner: { mid: 7, name: "UP" }, duration: 123 });
 
+test("playlist and search preserve the next API offset after filtering invalid entries", async () => {
+  const folderPages = [];
+  const searchPages = [];
+  await withPlugin((input) => {
+    const url = new URL(input);
+    if (url.pathname === "/x/v3/fav/resource/list") {
+      const page = url.searchParams.get("pn");
+      folderPages.push(page);
+      return response({ info: { id: 42, media_count: 21 }, has_more: page === "1", medias: [{}, video(page)] });
+    }
+    if (url.pathname === "/x/web-interface/wbi/search/type") {
+      const page = url.searchParams.get("page");
+      searchPages.push(page);
+      return response({ numPages: 2, result: [{ bvid: "", title: "invalid" }, { ...video(page), title: '1 < 2 <em class="keyword">入戏</em>' }] });
+    }
+    return discovery(input);
+  }, async (plugin) => {
+    const first = await plugin.playlist({ id: "42" });
+    assert.equal(first.more, true);
+    assert.equal(first.tracks.length, 1);
+    assert.equal(first.trackCount, 21);
+    const second = await plugin.playlist({ id: "42", offset: first.nextOffset });
+    assert.equal(second.more, false);
+    assert.notEqual(first.tracks[0].id, second.tracks[0].id);
+    assert.deepEqual(folderPages, ["1", "2"]);
+    const search = await plugin.search({ query: "入戏", kind: "tracks", offset: 0 });
+    assert.equal(search.tracks[0].name, "1 < 2 入戏");
+    assert.equal(search.more, true);
+    const last = await plugin.search({ query: "入戏", kind: "tracks", offset: search.nextOffset });
+    assert.equal(last.more, false);
+    assert.deepEqual(searchPages, ["1", "2"]);
+  });
+});
+
 /** Respond using the documented discovery endpoints and their different schemas. */
 function discovery(input) {
   const url = new URL(input);

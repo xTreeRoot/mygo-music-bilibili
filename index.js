@@ -605,8 +605,11 @@ class BilibiliPlatformStrategy {
       { keyword: query, search_type: "video", page: String(page), page_size: "20", order: "totalrank" },
       { wbi: true },
     );
-    const tracks = await this.tracksFrom(data.result);
-    return { tracks, more: page < number(data.numPages) };
+    const tracks = await this.tracksFrom(array(data.result).map((item) => ({
+      ...item,
+      title: text(item?.title).replace(/<em\s+class\s*=\s*(?:"keyword"|'keyword'|keyword)\s*>(.*?)<\/em\s*>/gis, "$1"),
+    })));
+    return { tracks, more: page < number(data.numPages), nextOffset: page * 20 };
   }
 
   async browse({ page }) {
@@ -692,8 +695,8 @@ class BilibiliPlatformStrategy {
     };
   }
 
-  async playlist({ id }) {
-    return this.folderContents(id, 1);
+  async playlist({ id, offset }) {
+    return this.folderContents(id, Math.floor(Math.max(0, number(offset)) / 20) + 1);
   }
 
   async folderContents(id, page) {
@@ -719,6 +722,7 @@ class BilibiliPlatformStrategy {
       trackCount: number(metadata.media_count),
       mine: true,
       more: data.has_more === true || data.has_more === 1,
+      nextOffset: page * 20,
       tracks: await this.tracksFrom(data.medias),
     };
   }
