@@ -1,8 +1,8 @@
-# 哔哩哔哩插件 · 山海 / MB / MyGo
+# 哔哩哔哩插件 · 山海 / MyGo
 
 **1.1.6**，独立维护的纯 JavaScript 信息源，同一份 `plugin.zip` 用于桌面、iOS 和 Android。平台 API、WBI 签名、扫码登录、分页、媒体地址与字幕转换全部属于本仓库，App 仅保留通用插件宿主和播放器，不再内置哔哩哔哩。
 
-源码从 [xTreeRoot/MB](https://github.com/xTreeRoot/MB) 的桌面插件迁出，沿用 AGPL-3.0，来源见 [NOTICE.md](NOTICE.md)。无需 Node 后台、独立 API 服务、ffmpeg 或 Google 服务。
+源码从 [xTreeRoot/ShanhaiMusic](https://github.com/xTreeRoot/ShanhaiMusic) 的桌面插件迁出，沿用 AGPL-3.0，来源见 [NOTICE.md](NOTICE.md)。无需 Node 后台、独立 API 服务、ffmpeg 或 Google 服务。
 
 ## 安装与升级
 
@@ -12,7 +12,7 @@
 xTreeRoot/mygo-music-bilibili
 ```
 
-也可以从 [Release](https://github.com/xTreeRoot/mygo-music-bilibili/releases/latest) 下载 `plugin.zip` 导入。三端使用同一个包。最低基础宿主版本为 MyGo 0.1.0，移动端需要支持 JavaScript 插件的山海 / MB；视频、歌词时间线、取消登录及账号迁移使用宿主的可选通用能力。
+也可以从 [Release](https://github.com/xTreeRoot/mygo-music-bilibili/releases/latest) 下载 `plugin.zip` 导入。三端使用同一个包。最低基础宿主版本为 MyGo 0.1.0，移动端需要支持 JavaScript 插件的山海；视频、歌词时间线、取消登录及账号迁移使用宿主的可选通用能力。
 
 插件 ID 继续使用 **`bilibili`**，不改写旧队列、收藏、下载及资料库引用。桌面沿用 `plugin-data/bilibili/storage.json`。新版移动宿主通过通用迁移保留旧的本地存储，插件负责旧字段转换；已有插件会话优先，不覆盖，旧数据不删除。旧宿主未提供迁移时需要重新扫码，不能用本插件读取其他应用或设备的账号。
 
@@ -38,8 +38,8 @@ API 登录 Cookie 不会附加给音视频 CDN 或封面请求。
 ## 验证
 
 - 25 项 Node 离线回归全部通过，覆盖公开浏览、搜索与分页、WBI 参数、收藏、历史、字幕秒转毫秒、账号迁移、退出与保留、旧存储兼容、取消请求头 / 响应体、账号身份校验和音质选择。
-- 使用 MB 桌面实际 Go 插件宿主运行独立插件，覆盖扫码 Cookie、取消、重新登录、收藏封面、音频与视频。
-- 在 MB 实际 QuickJS 与 iOS / Android 宿主脚本中运行同一入口，覆盖搜索分页、横竖屏尺寸、中文时间字幕、音视频、扫码流程和会话复用。接口使用合成响应，运行时检查不等同于真机验收。
+- 使用山海桌面实际 Go 插件宿主运行独立插件，覆盖扫码 Cookie、取消、重新登录、收藏封面、音频与视频。
+- 在山海实际 QuickJS 与 iOS / Android 宿主脚本中运行同一入口，覆盖搜索分页、横竖屏尺寸、中文时间字幕、音视频、扫码流程和会话复用。接口使用合成响应，运行时检查不等同于真机验收。
 - 匿名在线检查通过：首页、搜索及下一页、音频实际字节、视频资源、评论、官方二维码准备后取消。没有授权真实账号，也没有读取用户数据。真实账号扫码、账号写操作、VIP 和三端真机播放仍需单独验收。
 
 ## 开发
@@ -54,7 +54,7 @@ MOEJS_HOST_DIR=/path/to/MB sh scripts/test-desktop-runtime.sh
 python3 scripts/test-mobile-runtime.py --mb /path/to/MB
 ```
 
-宿主检查仅只读访问 MB 源码。桌面脚本把公开宿主包复制到临时测试模块，移动脚本在临时目录编译 QuickJS；均不修改 MB、账号或设备。移动脚本默认固定执行开始时的 MB `HEAD`，可用 `--ref` 指定已提交的源版本。
+宿主检查仅只读访问山海源码。桌面脚本把公开宿主包复制到临时测试模块，移动脚本在临时目录编译 QuickJS；均不修改山海、账号或设备。移动脚本默认固定执行开始时的山海 `HEAD`，可用 `--ref` 指定已提交的源版本。
 
 ## 许可证
 
