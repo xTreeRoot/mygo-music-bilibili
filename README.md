@@ -75,3 +75,5 @@ AGPL-3.0，保留原作者版权。本项目与哔哩哔哩无隶属关系。
 ### 1.1.6
 
 修复分 P 曲目的喜欢状态返回键，支持三端通过 `addToPlaylist` 将视频加入本人收藏夹（同一视频的分 P 共用收藏状态）。写入前核对收藏夹归属，服务端拒绝时保留错误。接口合同参考 sigcli/sigcli 的 bilibili_favorite.py：`/x/v3/fav/resource/deal` 的 `rid/type/add_media_ids/csrf` 表单。真实账号写入未在自动测试中执行。
+
+B 站通过 `playlistKind: "folder"` 声明“我的收藏 / 收藏夹”语义。添加与移除分别调用本人收藏夹的 `add_media_ids` / `del_media_ids` 合同，三端入口使用收藏夹名称。

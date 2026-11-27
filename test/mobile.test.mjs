@@ -94,6 +94,8 @@ test('adding to a platform folder validates ownership and uses the archive favor
   assert.deepEqual(Object.fromEntries(writes[0]),{rid:'7',type:'2',add_media_ids:'42',csrf:'csrf'});
   await assert.rejects(plugin.addToPlaylist({id:'99',trackIds:['BV123']}),/own favorite/);
   assert.equal(writes.length,1);
+  await plugin.removeFromPlaylist({id:'42',trackIds:['BV123:9']});
+  assert.deepEqual(Object.fromEntries(writes[1]),{rid:'7',type:'2',del_media_ids:'42',csrf:'csrf'});
  },{storage:new Map([['session',{cookie:'SESSDATA=fixture; bili_jct=csrf',active:true}]]),fetch:async(address,options)=>{
   const path=new URL(address).pathname;
   if(path==='/x/web-interface/nav')return response({isLogin:true,mid:123,uname:'fixture'});

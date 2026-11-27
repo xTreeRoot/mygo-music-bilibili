@@ -685,12 +685,7 @@ class BilibiliPlatformStrategy {
       title: host.t("Favorites"),
       sections: [{
         title: host.t("Playlists"),
-        links: playlists.map((playlist) => ({
-          title: playlist.name,
-          subtitle: String(playlist.trackCount),
-          imageUrl: playlist.imageUrl,
-          page: `folder:${playlist.id}`,
-        })),
+        playlists,
       }],
     };
   }
@@ -1041,7 +1036,7 @@ class BilibiliPlatformStrategy {
     return out;
   }
 
-  async addToPlaylist({ id, trackIds }) {
+  async changeFavoriteFolder({ id, trackIds }, add) {
     if (!/^\d+$/.test(text(id))) throw fail("invalid", "Invalid favorite folder.");
     const ids = [...new Set(array(trackIds).map(bvidOf))];
     if (!ids.length || ids.includes("") || ids.length > 100) throw fail("invalid", "Invalid video IDs.");
@@ -1055,11 +1050,14 @@ class BilibiliPlatformStrategy {
       if (this.cookie !== cookie) throw signedOut();
       if (!detail.aid) throw fail("invalid", "Bilibili did not return a video ID.");
       await this.request("/x/v3/fav/resource/deal", {}, { body: new URLSearchParams({
-        rid: text(detail.aid), type: "2", add_media_ids: text(id), csrf,
+        rid: text(detail.aid), type: "2", [add ? "add_media_ids" : "del_media_ids"]: text(id), csrf,
       }) });
     }
     this.folderMetadata.delete(text(id));
   }
+
+  addToPlaylist(args) { return this.changeFavoriteFolder(args, true); }
+  removeFromPlaylist(args) { return this.changeFavoriteFolder(args, false); }
 
   async like({ id, on }) {
     const bvid = bvidOf(id);
@@ -1126,6 +1124,10 @@ export function playlists() {
 
 export function addToPlaylist(input) {
   return activePlatformStrategy().addToPlaylist(input);
+}
+
+export function removeFromPlaylist(input) {
+  return activePlatformStrategy().removeFromPlaylist(input);
 }
 
 export function playlist(input) {
