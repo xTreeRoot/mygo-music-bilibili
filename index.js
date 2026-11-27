@@ -1028,17 +1028,37 @@ class BilibiliPlatformStrategy {
       const bvid = bvidOf(id);
       if (!bvid) continue;
       if (this.likedState.has(bvid)) {
-        out[bvid] = this.likedState.get(bvid);
+        out[id] = this.likedState.get(bvid);
         continue;
       }
       const detail = await this.detail(bvid);
       const relation = await this.request("/x/web-interface/archive/relation", {
         aid: text(detail.aid),
       });
-      out[bvid] = relation.like === true;
-      this.likedState.set(bvid, out[bvid]);
+      out[id] = relation.like === true;
+      this.likedState.set(bvid, out[id]);
     }
     return out;
+  }
+
+  async addToPlaylist({ id, trackIds }) {
+    if (!/^\d+$/.test(text(id))) throw fail("invalid", "Invalid favorite folder.");
+    const ids = [...new Set(array(trackIds).map(bvidOf))];
+    if (!ids.length || ids.includes("") || ids.length > 100) throw fail("invalid", "Invalid video IDs.");
+    const cookie = this.cookie;
+    const csrf = cookie.match(/(?:^|;\s*)bili_jct=([^;]+)/)?.[1];
+    if (!csrf) throw signedOut();
+    const owned = await this.playlists();
+    if (!owned.some(folder => folder.id === text(id))) throw fail("invalid", "Only your own favorite folders can be edited.");
+    for (const bvid of ids) {
+      const detail = await this.detail(bvid);
+      if (this.cookie !== cookie) throw signedOut();
+      if (!detail.aid) throw fail("invalid", "Bilibili did not return a video ID.");
+      await this.request("/x/v3/fav/resource/deal", {}, { body: new URLSearchParams({
+        rid: text(detail.aid), type: "2", add_media_ids: text(id), csrf,
+      }) });
+    }
+    this.folderMetadata.delete(text(id));
   }
 
   async like({ id, on }) {
@@ -1102,6 +1122,10 @@ export function search(input) {
 
 export function playlists() {
   return activePlatformStrategy().playlists();
+}
+
+export function addToPlaylist(input) {
+  return activePlatformStrategy().addToPlaylist(input);
 }
 
 export function playlist(input) {

@@ -70,3 +70,37 @@ test('standard and lossless media use actual formats and never send account cook
   assert.fail(path);
  }});
 });
+
+test('like status keeps requested multipart IDs while sharing the BV cache', async()=>{
+ let queries=0;
+ await fixture(async plugin=>{
+  const first=await plugin.isLiked({ids:['BV123:9','BV123:10']});
+  assert.deepEqual(first,{'BV123:9':true,'BV123:10':true});
+  assert.deepEqual(await plugin.isLiked({ids:['BV123:11']}),{'BV123:11':true});
+  assert.equal(queries,1);
+ },{storage:new Map([['session',{cookie:'SESSDATA=fixture; bili_jct=csrf',active:true}]]),fetch:async address=>{
+  const path=new URL(address).pathname;
+  if(path==='/x/web-interface/view')return response({aid:1,cid:2});
+  if(path==='/x/web-interface/archive/relation'){queries++;return response({like:true});}
+  assert.fail(path);
+ }});
+});
+
+test('adding to a platform folder validates ownership and uses the archive favorite contract',async()=>{
+ const writes=[];
+ await fixture(async plugin=>{
+  await plugin.addToPlaylist({id:'42',trackIds:['BV123:9','BV123:10']});
+  assert.equal(writes.length,1);
+  assert.deepEqual(Object.fromEntries(writes[0]),{rid:'7',type:'2',add_media_ids:'42',csrf:'csrf'});
+  await assert.rejects(plugin.addToPlaylist({id:'99',trackIds:['BV123']}),/own favorite/);
+  assert.equal(writes.length,1);
+ },{storage:new Map([['session',{cookie:'SESSDATA=fixture; bili_jct=csrf',active:true}]]),fetch:async(address,options)=>{
+  const path=new URL(address).pathname;
+  if(path==='/x/web-interface/nav')return response({isLogin:true,mid:123,uname:'fixture'});
+  if(path==='/x/v3/fav/folder/created/list-all')return response({list:[{id:42,title:'Music'}]});
+  if(path==='/x/v3/fav/folder/info')return response({id:42,title:'Music'});
+  if(path==='/x/web-interface/view')return response({aid:7,cid:2});
+  if(path==='/x/v3/fav/resource/deal'){writes.push(new URLSearchParams(options.body));return response({});}
+  assert.fail(path);
+ }});
+});

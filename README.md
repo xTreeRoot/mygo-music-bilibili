@@ -1,6 +1,6 @@
 # 哔哩哔哩插件 · 山海 / MB / MyGo
 
-**1.1.0**，独立维护的纯 JavaScript 信息源，同一份 `plugin.zip` 用于桌面、iOS 和 Android。平台 API、WBI 签名、扫码登录、分页、媒体地址与字幕转换全部属于本仓库，App 仅保留通用插件宿主和播放器，不再内置哔哩哔哩。
+**1.1.6**，独立维护的纯 JavaScript 信息源，同一份 `plugin.zip` 用于桌面、iOS 和 Android。平台 API、WBI 签名、扫码登录、分页、媒体地址与字幕转换全部属于本仓库，App 仅保留通用插件宿主和播放器，不再内置哔哩哔哩。
 
 源码从 [xTreeRoot/MB](https://github.com/xTreeRoot/MB) 的桌面插件迁出，沿用 AGPL-3.0，来源见 [NOTICE.md](NOTICE.md)。无需 Node 后台、独立 API 服务、ffmpeg 或 Google 服务。
 
@@ -71,3 +71,7 @@ AGPL-3.0，保留原作者版权。本项目与哔哩哔哩无隶属关系。
 播放器作者入口复用现有 UP 主主页与作品分页，不再因缺少 artist 导出而报错。
 
 作者页携带官网匿名访客上下文。作品请求被平台临时限制时保留已加载的 UP 资料并显示刷新提示，不伪造作品。
+
+### 1.1.6
+
+修复分 P 曲目的喜欢状态返回键，支持三端通过 `addToPlaylist` 将视频加入本人收藏夹（同一视频的分 P 共用收藏状态）。写入前核对收藏夹归属，服务端拒绝时保留错误。接口合同参考 sigcli/sigcli 的 bilibili_favorite.py：`/x/v3/fav/resource/deal` 的 `rid/type/add_media_ids/csrf` 表单。真实账号写入未在自动测试中执行。
